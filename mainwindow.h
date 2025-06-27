@@ -17,6 +17,8 @@ private slots:
 
     // File menu contents
     void handleOpenAction();
+    void parseXML(QString data);
+    void loadXMLToBrowser(QString data);
 
 public:
     MainWindow(QWidget *parent = nullptr);
