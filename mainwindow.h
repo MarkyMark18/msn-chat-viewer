@@ -13,16 +13,24 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+    struct ChatMessage {
+        QString dateTime;
+        QString fromUser;
+        QString toUser;
+        QString text;
+        QString textStyle;
+    };
+
 private slots:
 
     // File menu contents
     void handleOpenAction();
     void parseXML(QString data);
-    void loadXMLToBrowser(QString data);
-
-public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    MainWindow::ChatMessage buildMessage(QString rawMsgData);
 
 private:
     Ui::MainWindow *ui;

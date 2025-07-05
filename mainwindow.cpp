@@ -48,47 +48,48 @@ void MainWindow::handleOpenAction() {
 
 void MainWindow::parseXML(QString data) {
 
-    int index = 0;
+    int rawXMLIndex = 0;
+    QString messageStartText = "<Message";
+    QString messageEndText = "</Message>";
 
-    while (index < data.length()) {
+    std::vector<ChatMessage> messageList;
 
-        // Get the index of the next start tag
-        int tagStart = data.indexOf('<', index);
+    while (rawXMLIndex < data.length()) {
 
-        // Check if there are no more tags left to parse
-        if (tagStart == -1) {
+        // Get the start index of the next message
+        int messageStartIndex = data.indexOf(messageStartText, rawXMLIndex);
+
+        // Check if there are no more messages left to parse
+        if (messageStartIndex == -1) {
             break;
         }
 
-        // Get the index of the end of the tag
-        int tagEnd = data.indexOf('>', tagStart);
+        // Offset the messageStartIndex to remove "<Message"
+        messageStartIndex += messageStartText.length();
 
-        // // Retrieve the contents of the tag (unless it's a closing tag)
-        // if (data[tagStart + 1] != '/') {
+        // Get the end index of the message and it's length
+        int messageEndIndex = data.indexOf("</Message>", messageStartIndex) - 1;
+        int messageLength = messageEndIndex - messageStartIndex;
 
-        //     int tagLength = tagEnd - (tagStart + 1);
+        // Retrieve the contents of the tag (unless it's a closing tag)
+        QString rawMessageContent = data.mid(messageStartIndex, messageLength).trimmed();
 
-        //     QString tag = data.mid(tagStart + 1, tagLength);
-
-        //     ui->xmlViewer->append(tag);
-
-        // }
-
-        // Retrieve the text contents of the tag and trim it
-        int contentLength = data.indexOf('<', tagEnd) - (tagEnd + 1);
-        QString textContent = data.mid(tagEnd + 1, contentLength).trimmed();
-
-        // Output the
-        if (!textContent.isEmpty()) {
-            ui->xmlViewer->append(textContent + "\n");
+        // Output the text content to the viewer
+        if (!rawMessageContent.isEmpty()) {
+            ui->xmlViewer->append("NEXT MESSAGE:\n\n" + rawMessageContent + "\n");
         }
 
-        index = tagEnd + 1;
+        // Update the index to search for the next message
+        rawXMLIndex = messageEndIndex + messageEndText.length();
 
     }
 
 }
 
-void MainWindow::loadXMLToBrowser(QString data) {
+MainWindow::ChatMessage MainWindow::buildMessage(QString rawMessageData) {
+
+    MainWindow::ChatMessage chatMessage;
+
+    return chatMessage;
 
 }
