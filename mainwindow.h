@@ -33,6 +33,7 @@ private slots:
     void parseXML(QString data);
     MainWindow::ChatMessage buildMessage(QString rawMsgData);
     QDateTime parseDateTime(QString rawMessageData);
+    QString parseUsername(QString rawMessageData, QString tagType);
     QString parseFromUser(QString rawMessageData);
     QString parseToUser(QString rawMessageData);
     QString parseText(QString rawMessageData);

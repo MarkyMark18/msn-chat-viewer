@@ -131,14 +131,40 @@ QDateTime MainWindow::parseDateTime(QString rawMessageData) {
     return QDateTime::fromString(dateTimeString, "yyyy-MM-ddTHH:mm:ss");
 }
 
+QString MainWindow::parseUsername(QString rawMessageData, QString fromToTag) {
+
+    // The username start and end tags, for searching the raw data
+    QString userStartString = "FriendlyName=\"";
+    QString userEndTag = "\"/>";
+
+    // Get the start and end indexes of the username
+    int fromTagIndex = rawMessageData.indexOf(fromToTag, 0);
+    int userStartIndex = rawMessageData.indexOf(userStartString, fromTagIndex) + userStartString.length();
+    int userEndIndex = rawMessageData.indexOf(userEndTag, userStartIndex);
+
+    // Return the username
+    return rawMessageData.mid(userStartIndex, userEndIndex - userStartIndex);
+
+}
+
 QString MainWindow::parseFromUser(QString rawMessageData) {
-    QString fromUser = "";
-    return fromUser;
+
+    // The <From> tag, for passing to parseUsername() so correct username can be retrieved
+    QString fromTag = "<From>";
+
+    // Return the From username
+    return MainWindow::parseUsername(rawMessageData, fromTag);
+
 }
 
 QString MainWindow::parseToUser(QString rawMessageData) {
-    QString toUser = "";
-    return toUser;
+
+    // The <To> tag, for passing to parseUsername
+    QString toTag = "<To>";
+
+    //Return the To username
+    return MainWindow::parseUsername(rawMessageData, toTag);
+
 }
 
 QString MainWindow::parseText(QString rawMessageData) {
