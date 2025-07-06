@@ -142,7 +142,7 @@ QString MainWindow::parseUsername(QString rawMessageData, QString fromToTag) {
     int userStartIndex = rawMessageData.indexOf(userStartString, fromTagIndex) + userStartString.length();
     int userEndIndex = rawMessageData.indexOf(userEndTag, userStartIndex);
 
-    // Return the username
+    // Extract and return the username
     return rawMessageData.mid(userStartIndex, userEndIndex - userStartIndex);
 
 }
@@ -159,20 +159,43 @@ QString MainWindow::parseFromUser(QString rawMessageData) {
 
 QString MainWindow::parseToUser(QString rawMessageData) {
 
-    // The <To> tag, for passing to parseUsername
+    // The <To> tag, for passing to parseUsername() so correct username can be retrieved
     QString toTag = "<To>";
 
-    //Return the To username
+    // Return the To username
     return MainWindow::parseUsername(rawMessageData, toTag);
 
 }
 
 QString MainWindow::parseText(QString rawMessageData) {
-    QString text = "";
-    return text;
+
+    // The various elements of the Text start and end tags, for searching the raw data
+    QString textStartTagStartString = "<Text ";
+    QString textStartTagEndString = ">";
+    QString textEndTagString = "</Text>";
+
+    // Get the start and end indexes of the text
+    int textTagIndex = rawMessageData.indexOf(textStartTagStartString, 0);
+    int textStartIndex = rawMessageData.indexOf(textStartTagEndString, textTagIndex) + 1;
+    int textEndIndex = rawMessageData.indexOf(textEndTagString, textStartIndex);
+
+    // Extract and return the message text
+    return rawMessageData.mid(textStartIndex, textEndIndex - textStartIndex);;
+
 }
 
 QString MainWindow::parseTextStyle(QString rawMessageData) {
-    QString textStyle = "";
-    return textStyle;
+
+    // The start and end of the text style tag, for searching the raw data
+    QString textStyleTagStartString = "<Text Style=\"";
+    int textStyleTagLength = textStyleTagStartString.length();
+    QString textStyleTagEndString = "\">";
+
+    // Get the start and end indexes of the text style
+    int textStyleStartIndex = rawMessageData.indexOf(textStyleTagStartString, 0) + textStyleTagLength;
+    int textStyleEndIndex = rawMessageData.indexOf(textStyleTagEndString, textStyleStartIndex);
+
+    // Extract and return the text style
+    return rawMessageData.mid(textStyleStartIndex, textStyleEndIndex - textStyleStartIndex);
+
 }
