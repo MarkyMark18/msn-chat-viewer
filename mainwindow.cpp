@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "parser.h"
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -40,162 +41,14 @@ void MainWindow::handleOpenAction() {
         return;
     }
 
-    QString xmlData = file.readAll();
+    // Extract the raw XML data from the file
+    QString rawXMLData = file.readAll();
 
-    // Pass the XML data to the parser to format it for display
-    parseXML(xmlData);
+    // Create an instance of the parser
+    Parser parser;
 
-}
-
-void MainWindow::parseXML(QString data) {
-
-    // Initialise the index
-    int rawXMLIndex = 0;
-
-    // The message start and end tags, for searching the raw data
-    QString messageStartString = "<Message";
-    QString messageEndString = "</Message>";
-
-    // Create the message list
-    std::vector<ChatMessage> messageList;
-
-    // Loop through the raw data
-    while (rawXMLIndex < data.length()) {
-
-        // Get the start index of the next message
-        int messageStartIndex = data.indexOf(messageStartString, rawXMLIndex);
-
-        // Check if there are no more messages left to parse
-        if (messageStartIndex == -1) {
-            break;
-        }
-
-        // Offset the messageStartIndex to remove "<Message"
-        messageStartIndex += messageStartString.length();
-
-        // Get the end index of the message and it's length
-        int messageEndIndex = data.indexOf("</Message>", messageStartIndex) - 1;
-        int messageLength = messageEndIndex - messageStartIndex;
-
-        // Retrieve the contents of the tag (unless it's a closing tag)
-        QString rawMessageContent = data.mid(messageStartIndex, messageLength).trimmed();
-
-        // // PLACEHOLDER Output the text content to the viewer
-        // if (!rawMessageContent.isEmpty()) {
-        //     ui->xmlViewer->append("NEXT MESSAGE:\n\n" + rawMessageContent + "\n");
-        // }
-
-        // Build the message and add it to the list
-        MainWindow::ChatMessage chatMessage = MainWindow::buildMessage(rawMessageContent);
-        messageList.push_back(chatMessage);
-
-        // Update the index to search for the next message
-        rawXMLIndex = messageEndIndex + messageEndString.length();
-
-    }
+    // Pass the raw XML data to the parser to get a list of ChatMessages
+    std::vector<ChatMessage> messageList = parser.parseXML(rawXMLData);
 
 }
 
-MainWindow::ChatMessage MainWindow::buildMessage(QString rawMessageData) {
-
-    MainWindow::ChatMessage chatMessage;
-
-    chatMessage.dateTime = MainWindow::parseDateTime(rawMessageData);
-    chatMessage.fromUser = MainWindow::parseFromUser(rawMessageData);
-    chatMessage.toUser = MainWindow::parseToUser(rawMessageData);
-    chatMessage.text = MainWindow::parseText(rawMessageData);
-    chatMessage.textStyle = MainWindow::parseTextStyle(rawMessageData);
-
-    return chatMessage;
-
-}
-
-QDateTime MainWindow::parseDateTime(QString rawMessageData) {
-
-    // The date and time start tags, for searching the raw data
-    QString dateStartString = "Date=\"";
-    int dateLength = 10;
-    QString timeStartString = "Time=\"";
-    int timeLength = 8;
-
-    // Get the start indexes of the date and time
-    int dateIndex = rawMessageData.indexOf(dateStartString, 0) + dateStartString.length();
-    int timeIndex = rawMessageData.indexOf(timeStartString, 0) + timeStartString.length();
-
-    // Extract the date and time strings and combine them with a T separator
-    QString dateString = rawMessageData.mid(dateIndex, dateLength);
-    QString timeString = rawMessageData.mid(timeIndex, timeLength);
-    QString dateTimeString = dateString + "T" + timeString;
-
-    // Return a DateTime object created from the string
-    return QDateTime::fromString(dateTimeString, "yyyy-MM-ddTHH:mm:ss");
-}
-
-QString MainWindow::parseUsername(QString rawMessageData, QString fromToTag) {
-
-    // The username start and end tags, for searching the raw data
-    QString userStartString = "FriendlyName=\"";
-    QString userEndTag = "\"/>";
-
-    // Get the start and end indexes of the username
-    int fromTagIndex = rawMessageData.indexOf(fromToTag, 0);
-    int userStartIndex = rawMessageData.indexOf(userStartString, fromTagIndex) + userStartString.length();
-    int userEndIndex = rawMessageData.indexOf(userEndTag, userStartIndex);
-
-    // Extract and return the username
-    return rawMessageData.mid(userStartIndex, userEndIndex - userStartIndex);
-
-}
-
-QString MainWindow::parseFromUser(QString rawMessageData) {
-
-    // The <From> tag, for passing to parseUsername() so correct username can be retrieved
-    QString fromTag = "<From>";
-
-    // Return the From username
-    return MainWindow::parseUsername(rawMessageData, fromTag);
-
-}
-
-QString MainWindow::parseToUser(QString rawMessageData) {
-
-    // The <To> tag, for passing to parseUsername() so correct username can be retrieved
-    QString toTag = "<To>";
-
-    // Return the To username
-    return MainWindow::parseUsername(rawMessageData, toTag);
-
-}
-
-QString MainWindow::parseText(QString rawMessageData) {
-
-    // The various elements of the Text start and end tags, for searching the raw data
-    QString textStartTagStartString = "<Text ";
-    QString textStartTagEndString = ">";
-    QString textEndTagString = "</Text>";
-
-    // Get the start and end indexes of the text
-    int textTagIndex = rawMessageData.indexOf(textStartTagStartString, 0);
-    int textStartIndex = rawMessageData.indexOf(textStartTagEndString, textTagIndex) + 1;
-    int textEndIndex = rawMessageData.indexOf(textEndTagString, textStartIndex);
-
-    // Extract and return the message text
-    return rawMessageData.mid(textStartIndex, textEndIndex - textStartIndex);;
-
-}
-
-QString MainWindow::parseTextStyle(QString rawMessageData) {
-
-    // The start and end of the text style tag, for searching the raw data
-    QString textStyleTagStartString = "<Text Style=\"";
-    int textStyleTagLength = textStyleTagStartString.length();
-    QString textStyleTagEndString = "\">";
-
-    // Get the start and end indexes of the text style
-    int textStyleStartIndex = rawMessageData.indexOf(textStyleTagStartString, 0) + textStyleTagLength;
-    int textStyleEndIndex = rawMessageData.indexOf(textStyleTagEndString, textStyleStartIndex);
-
-    // Extract and return the text style
-    return rawMessageData.mid(textStyleStartIndex, textStyleEndIndex - textStyleStartIndex);
-
-}

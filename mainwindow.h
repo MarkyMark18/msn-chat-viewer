@@ -18,26 +18,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    struct ChatMessage {
-        QDateTime dateTime;
-        QString fromUser;
-        QString toUser;
-        QString text;
-        QString textStyle;
-    };
-
 private slots:
 
     // File menu contents
     void handleOpenAction();
-    void parseXML(QString data);
-    MainWindow::ChatMessage buildMessage(QString rawMsgData);
-    QDateTime parseDateTime(QString rawMessageData);
-    QString parseUsername(QString rawMessageData, QString tagType);
-    QString parseFromUser(QString rawMessageData);
-    QString parseToUser(QString rawMessageData);
-    QString parseText(QString rawMessageData);
-    QString parseTextStyle(QString rawMessageData);
 
 private:
     Ui::MainWindow *ui;
