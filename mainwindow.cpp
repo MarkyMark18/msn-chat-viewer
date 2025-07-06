@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -48,16 +49,21 @@ void MainWindow::handleOpenAction() {
 
 void MainWindow::parseXML(QString data) {
 
+    // Initialise the index
     int rawXMLIndex = 0;
-    QString messageStartText = "<Message";
-    QString messageEndText = "</Message>";
 
+    // The message start and end tags, for searching the raw data
+    QString messageStartString = "<Message";
+    QString messageEndString = "</Message>";
+
+    // Create the message list
     std::vector<ChatMessage> messageList;
 
+    // Loop through the raw data
     while (rawXMLIndex < data.length()) {
 
         // Get the start index of the next message
-        int messageStartIndex = data.indexOf(messageStartText, rawXMLIndex);
+        int messageStartIndex = data.indexOf(messageStartString, rawXMLIndex);
 
         // Check if there are no more messages left to parse
         if (messageStartIndex == -1) {
@@ -65,7 +71,7 @@ void MainWindow::parseXML(QString data) {
         }
 
         // Offset the messageStartIndex to remove "<Message"
-        messageStartIndex += messageStartText.length();
+        messageStartIndex += messageStartString.length();
 
         // Get the end index of the message and it's length
         int messageEndIndex = data.indexOf("</Message>", messageStartIndex) - 1;
@@ -74,13 +80,17 @@ void MainWindow::parseXML(QString data) {
         // Retrieve the contents of the tag (unless it's a closing tag)
         QString rawMessageContent = data.mid(messageStartIndex, messageLength).trimmed();
 
-        // Output the text content to the viewer
-        if (!rawMessageContent.isEmpty()) {
-            ui->xmlViewer->append("NEXT MESSAGE:\n\n" + rawMessageContent + "\n");
-        }
+        // // PLACEHOLDER Output the text content to the viewer
+        // if (!rawMessageContent.isEmpty()) {
+        //     ui->xmlViewer->append("NEXT MESSAGE:\n\n" + rawMessageContent + "\n");
+        // }
+
+        // Build the message and add it to the list
+        MainWindow::ChatMessage chatMessage = MainWindow::buildMessage(rawMessageContent);
+        messageList.push_back(chatMessage);
 
         // Update the index to search for the next message
-        rawXMLIndex = messageEndIndex + messageEndText.length();
+        rawXMLIndex = messageEndIndex + messageEndString.length();
 
     }
 
@@ -90,6 +100,53 @@ MainWindow::ChatMessage MainWindow::buildMessage(QString rawMessageData) {
 
     MainWindow::ChatMessage chatMessage;
 
+    chatMessage.dateTime = MainWindow::parseDateTime(rawMessageData);
+    chatMessage.fromUser = MainWindow::parseFromUser(rawMessageData);
+    chatMessage.toUser = MainWindow::parseToUser(rawMessageData);
+    chatMessage.text = MainWindow::parseText(rawMessageData);
+    chatMessage.textStyle = MainWindow::parseTextStyle(rawMessageData);
+
     return chatMessage;
 
+}
+
+QDateTime MainWindow::parseDateTime(QString rawMessageData) {
+
+    // The date and time start tags, for searching the raw data
+    QString dateStartString = "Date=\"";
+    int dateLength = 10;
+    QString timeStartString = "Time=\"";
+    int timeLength = 8;
+
+    // Get the start indexes of the date and time
+    int dateIndex = rawMessageData.indexOf(dateStartString, 0) + dateStartString.length();
+    int timeIndex = rawMessageData.indexOf(timeStartString, 0) + timeStartString.length();
+
+    // Extract the date and time strings and combine them with a T separator
+    QString dateString = rawMessageData.mid(dateIndex, dateLength);
+    QString timeString = rawMessageData.mid(timeIndex, timeLength);
+    QString dateTimeString = dateString + "T" + timeString;
+
+    // Return a DateTime object created from the string
+    return QDateTime::fromString(dateTimeString, "yyyy-MM-ddTHH:mm:ss");
+}
+
+QString MainWindow::parseFromUser(QString rawMessageData) {
+    QString fromUser = "";
+    return fromUser;
+}
+
+QString MainWindow::parseToUser(QString rawMessageData) {
+    QString toUser = "";
+    return toUser;
+}
+
+QString MainWindow::parseText(QString rawMessageData) {
+    QString text = "";
+    return text;
+}
+
+QString MainWindow::parseTextStyle(QString rawMessageData) {
+    QString textStyle = "";
+    return textStyle;
 }

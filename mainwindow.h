@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,7 +19,7 @@ public:
     ~MainWindow();
 
     struct ChatMessage {
-        QString dateTime;
+        QDateTime dateTime;
         QString fromUser;
         QString toUser;
         QString text;
@@ -31,6 +32,11 @@ private slots:
     void handleOpenAction();
     void parseXML(QString data);
     MainWindow::ChatMessage buildMessage(QString rawMsgData);
+    QDateTime parseDateTime(QString rawMessageData);
+    QString parseFromUser(QString rawMessageData);
+    QString parseToUser(QString rawMessageData);
+    QString parseText(QString rawMessageData);
+    QString parseTextStyle(QString rawMessageData);
 
 private:
     Ui::MainWindow *ui;
