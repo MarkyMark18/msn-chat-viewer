@@ -50,5 +50,16 @@ void MainWindow::handleOpenAction() {
     // Pass the raw XML data to the parser to get a list of ChatMessages
     std::vector<ChatMessage> messageList = parser.parseXML(rawXMLData);
 
+    // Output the message to the XMLViewer
+    for (ChatMessage &msg : messageList) {
+
+        ui->xmlViewer->setStyleSheet("Calibri; color:#000000");
+        ui->xmlViewer->append(msg.dateTime.toString());
+        ui->xmlViewer->append("From: " + msg.fromUser);
+        ui->xmlViewer->append("To: " + msg.toUser);
+        ui->xmlViewer->append("    " + msg.text + "\n\n");
+
+    }
+
 }
 
