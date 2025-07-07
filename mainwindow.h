@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "parser.h"
 #include <QMainWindow>
 #include <qdatetime.h>
 
@@ -22,8 +23,11 @@ private slots:
 
     // File menu contents
     void handleOpenAction();
+    void displayMessages(const std::vector<ChatMessage> &messageList);
 
 private:
     Ui::MainWindow *ui;
+
+    const QString defaultFontSize = "12";
 };
 #endif // MAINWINDOW_H
