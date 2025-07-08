@@ -29,7 +29,7 @@ std::vector<ChatMessage> Parser::parseXML(const QString &rawXMLData) {
         messageStartIndex += messageStartString.length();
 
         // Get the end index of the message and it's length
-        int messageEndIndex = rawXMLData.indexOf("</Message>", messageStartIndex) - 1;
+        int messageEndIndex = rawXMLData.indexOf("</Message>", messageStartIndex);
         int messageLength = messageEndIndex - messageStartIndex;
 
         // Retrieve the contents of the tag (unless it's a closing tag)
@@ -85,7 +85,7 @@ QDateTime Parser::parseDateTime(QString rawMessageData) {
     QString dateTimeString = dateString + "T" + timeString;
 
     // Return a DateTime object created from the string
-    return QDateTime::fromString(dateTimeString, "yyyy-MM-ddTHH:mm:ss");
+    return QDateTime::fromString(dateTimeString, "dd/MM/yyyyTHH:mm:ss");
 }
 
 QString Parser::parseUsername(QString rawMessageData, QString fromToTag) {
