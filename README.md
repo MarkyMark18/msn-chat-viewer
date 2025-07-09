@@ -2,7 +2,7 @@
 
 A simple Qt/C++ application to parse and view chat logs from old MSN Messenger XML history files.
 
-![image](https://github.com/user-attachments/assets/f69eac5f-1edc-43eb-9bff-b5c63df4e8b8)
+![image](https://github.com/user-attachments/assets/f742c36b-cbbd-471f-aea6-29999955bebd)
 
 ## About The Project
 
@@ -37,5 +37,6 @@ This is a work-in-progress learning project. Some of the features and improvemen
 - **Improved Error Handling:** Add ability for the parser to handle corrupted files gracefully.
 - **Chat History Database:** Allow importing multiple chat history files and saving these within the application, rather than loading single files.
 
-##License
+## License
+
 This project is licensed under the terms of the MIT license. See `LICENSE` for details
