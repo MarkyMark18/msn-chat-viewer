@@ -21,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // File menu contents
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::handleOpenAction);
+
+    // Buttons
+    connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::handleOpenAction);
 }
 
 MainWindow::~MainWindow()
@@ -65,39 +68,42 @@ void MainWindow::handleOpenAction() {
 void MainWindow::displayMessages(const std::vector<ChatMessage> &messageList) {
 
     // The styling to use for the header
-    QString headerStyle = "font-family:Calibri; color:#111111; font-size:" +
+    QString headerStyle = "font-family:Calibri; background-color:#dddddd; color:#111111; font-size:" +
         defaultFontSize + "pt;";
 
-    // Output the message to the XMLViewer
+    // Initialise the QStringList to add each message to
+    QStringList htmlMessageList;
+
+    // Create each message and add them to the htmlMessageList
     for (const ChatMessage &msg : messageList) {
 
-        // Create the formatted header
-        QString formattedHeader = QString(
-                                    "<pre><span style=\"%1\">%2\nFrom: %3\nTo: %4</span></pre>"
-                                    )
-                                    .arg(
-                                        headerStyle,
-                                        msg.dateTime.toString(),
-                                        msg.fromUser,
-                                        msg.toUser
-                                    );
-
-        // Add the font size to the message
+        // The font size and colour for the message
         QString textStyle = msg.textStyle + " font-size:" + defaultFontSize + "pt;";
 
-        // Create the formatted message text using the original styling
-        QString formattedText = QString(
-                                    "<pre><span style=\"%1\">    %2\n</span></pre>"
-                                    )
-                                    .arg(
-                                        textStyle,
-                                        msg.text
-                                    );
+        // Create the message
+        QString singleFormattedMessage = QString(
+            "<div style=\"%1\">"
+            "%2<br>"
+            "From: %3<br>"
+            "To: %4"
+            "</div>"
+            "<div style=\"%5\">"
+            "<br>&nbsp;&nbsp;&nbsp;&nbsp;%6<br>"
+            "</div>"
+            ).arg(
+                headerStyle,
+                msg.dateTime.toString(),
+                msg.fromUser,
+                msg.toUser,
+                textStyle,
+                msg.text
+                );
 
-        // Output the formatted header and text to the viewer
-        ui->xmlViewer->append(formattedHeader);
-        ui->xmlViewer->append(formattedText);
+        // Add the message to the message list
+        htmlMessageList.append(singleFormattedMessage);
 
     }
+
+    ui->xmlViewer->setHtml(htmlMessageList.join(""));
 
 }
