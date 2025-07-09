@@ -21,7 +21,7 @@ Rather than using an inbuilt XML library, I built a manual file parser as practi
 ## Build and Run
 Build using the Qt6 framework and CMake
 
-1. **Prerequisites: ** Use Qt6 (with [Qt Creator](https://www.qt.io/product/development-tools)) and a C++ compiler (I used MVSC on Windows, installed through [Visual Studio](https://visualstudio.microsoft.com/downloads/))
+1. **Prerequisites:** Use Qt6 (with [Qt Creator](https://www.qt.io/product/development-tools)) and a C++ compiler (I used MVSC on Windows, installed through [Visual Studio](https://visualstudio.microsoft.com/downloads/))
 2. Clone the repository
 3. Open the project in Qt Creator by opening the `CMakeLists.txt` file
 4. Qt Creator should automatically configure the project.
