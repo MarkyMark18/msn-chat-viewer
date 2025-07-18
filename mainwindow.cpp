@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // File menu contents
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::handleOpenAction);
+    connect(ui->actionClose, &QAction::triggered, this, &QWidget::close);
 
     // Buttons
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::handleOpenAction);

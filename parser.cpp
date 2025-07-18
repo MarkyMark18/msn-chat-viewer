@@ -28,8 +28,16 @@ std::vector<ChatMessage> Parser::parseXML(const QString &rawXMLData) {
         // Offset the messageStartIndex to remove "<Message"
         messageStartIndex += messageStartString.length();
 
-        // Get the end index of the message and it's length
+        // Get the end index of the message
         int messageEndIndex = rawXMLData.indexOf("</Message>", messageStartIndex);
+
+        // Handle a malformed message end tag (skip to next message)
+        if (messageEndIndex == -1) {
+            rawXMLIndex = messageStartIndex + messageStartString.length();
+            continue;
+        }
+
+        // Get the length of the message
         int messageLength = messageEndIndex - messageStartIndex;
 
         // Retrieve the contents of the tag (unless it's a closing tag)
@@ -75,9 +83,19 @@ QDateTime Parser::parseDateTime(QString rawMessageData) {
     QString timeStartString = "Time=\"";
     int timeLength = 8;
 
-    // Get the start indexes of the date and time
-    int dateIndex = rawMessageData.indexOf(dateStartString, 0) + dateStartString.length();
-    int timeIndex = rawMessageData.indexOf(timeStartString, 0) + timeStartString.length();
+    // Get the start indexes of the date and time tags
+    int dateStartIndex = rawMessageData.indexOf(dateStartString, 0);
+    int timeStartIndex = rawMessageData.indexOf(timeStartString, 0);
+
+    // Handle malformed date or time tags (return a blank datetime)
+    if (dateStartIndex == -1 || timeStartIndex == -1) {
+        return QDateTime();
+    }
+
+    // Calculate the start indexes of the actual date and time
+    int dateIndex = dateStartIndex + dateStartString.length();
+    int timeIndex = timeStartIndex + timeStartString.length();
+
 
     // Extract the date and time strings and combine them with a T separator
     QString dateString = rawMessageData.mid(dateIndex, dateLength);
@@ -94,10 +112,30 @@ QString Parser::parseUsername(QString rawMessageData, QString fromToTag) {
     QString userStartString = "FriendlyName=\"";
     QString userEndTag = "\"/>";
 
-    // Get the start and end indexes of the username
-    int fromTagIndex = rawMessageData.indexOf(fromToTag, 0);
-    int userStartIndex = rawMessageData.indexOf(userStartString, fromTagIndex) + userStartString.length();
+    // Get the index of the from/to tag
+    int fromToTagIndex = rawMessageData.indexOf(fromToTag, 0);
+
+    // Handle a malformed from/to tag (return an empty string)
+    if (fromToTagIndex == -1) {
+        return "";
+    }
+
+    // Get the index of the start string
+    int userStartStringIndex = rawMessageData.indexOf(userStartString, fromToTagIndex);
+
+    // Handle a malformed start string (return an empty string)
+    if (userStartStringIndex == -1) {
+        return "";
+    }
+
+    // Get the start and end index of the username
+    int userStartIndex = userStartStringIndex + userStartString.length();
     int userEndIndex = rawMessageData.indexOf(userEndTag, userStartIndex);
+
+    // Handle a malformed username end tag (return an empty string)
+    if (userEndIndex == -1) {
+        return "";
+    }
 
     // Extract and return the username
     return rawMessageData.mid(userStartIndex, userEndIndex - userStartIndex);
@@ -131,13 +169,33 @@ QString Parser::parseText(QString rawMessageData) {
     QString textStartTagEndString = ">";
     QString textEndTagString = "</Text>";
 
-    // Get the start and end indexes of the text
+    // Get the starting text tag index
     int textTagIndex = rawMessageData.indexOf(textStartTagStartString, 0);
+
+    // Handle malformed/missing text tag (return empty string)
+    if (textTagIndex == -1) {
+        return "";
+    }
+
+    // Get the start index of the text
     int textStartIndex = rawMessageData.indexOf(textStartTagEndString, textTagIndex) + 1;
+
+    // Handle missing closing angle bracket on text start tag (return empty string)
+    // NOTE: validates as 0 due to the +1 in textStartIndex declaration
+    if (textStartIndex == 0) {
+        return "";
+    }
+
+    // Get the end index of the text
     int textEndIndex = rawMessageData.indexOf(textEndTagString, textStartIndex);
 
+    // Handle malformed/missing text end tag (Return empty string)
+    if (textEndIndex == -1) {
+        return "";
+    }
+
     // Extract and return the message text
-    return rawMessageData.mid(textStartIndex, textEndIndex - textStartIndex);;
+    return rawMessageData.mid(textStartIndex, textEndIndex - textStartIndex);
 
 }
 
@@ -148,9 +206,24 @@ QString Parser::parseTextStyle(QString rawMessageData) {
     int textStyleTagLength = textStyleTagStartString.length();
     QString textStyleTagEndString = "\">";
 
-    // Get the start and end indexes of the text style
-    int textStyleStartIndex = rawMessageData.indexOf(textStyleTagStartString, 0) + textStyleTagLength;
+    // Get the index of the text style start tag
+    int textStyleStartTagIndex = rawMessageData.indexOf(textStyleTagStartString, 0);
+
+    // Handle malformed/missing text style start tag (return empty string)
+    if (textStyleStartTagIndex == -1) {
+        return "";
+    }
+
+    // Get the start index of the text style
+    int textStyleStartIndex = textStyleStartTagIndex + textStyleTagLength;
+
+    // Get the index of the text style end tag
     int textStyleEndIndex = rawMessageData.indexOf(textStyleTagEndString, textStyleStartIndex);
+
+    // Handle malformed/missing text style end tag (Return empty string)
+    if (textStyleEndIndex == -1) {
+        return "";
+    }
 
     // Extract and return the text style
     return rawMessageData.mid(textStyleStartIndex, textStyleEndIndex - textStyleStartIndex);
