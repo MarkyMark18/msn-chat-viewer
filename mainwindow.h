@@ -3,6 +3,7 @@
 
 #include "parser.h"
 #include <QMainWindow>
+#include <QThread>
 #include <qdatetime.h>
 
 QT_BEGIN_NAMESPACE
@@ -23,10 +24,19 @@ private slots:
 
     // File menu contents
     void handleOpenAction();
-    void displayMessages(const std::vector<ChatMessage> &messageList);
+
+    void handleParsingFinished(const std::vector<ChatMessage> &messageList);
+
+signals:
+    void startParsing(const QString &rawXMLData);
 
 private:
     Ui::MainWindow *ui;
+
+    QThread parserThread;
+    Parser parser;
+
+    void displayMessages(const std::vector<ChatMessage> &messageList);
 
     const QString defaultFontSize = "12";
 };

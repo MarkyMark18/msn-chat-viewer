@@ -2,10 +2,13 @@
 
 Parser::Parser() {}
 
-std::vector<ChatMessage> Parser::parseXML(const QString &rawXMLData) {
+void Parser::parseXML(const QString &rawXMLData) {
 
     // Initialise the index
     int rawXMLIndex = 0;
+
+    // Get the total length of the rawXMLData for the progress calculation
+    int totalXMLDataSize = rawXMLData.length();
 
     // The message start and end tags, for searching the raw data
     QString messageStartString = "<Message";
@@ -15,25 +18,33 @@ std::vector<ChatMessage> Parser::parseXML(const QString &rawXMLData) {
     std::vector<ChatMessage> messageList;
 
     // Loop through the raw data
-    while (rawXMLIndex < rawXMLData.length()) {
+    while (rawXMLIndex < totalXMLDataSize) {
 
-        // Get the start index of the next message
-        int messageStartIndex = rawXMLData.indexOf(messageStartString, rawXMLIndex);
+        // Get the start index of the message, and the message after that
+        int messageTagStartIndex = rawXMLData.indexOf(messageStartString, rawXMLIndex);
+        int nextMessageStartIndex = rawXMLData.indexOf(messageStartString, messageTagStartIndex + 1);
 
         // Check if there are no more messages left to parse
-        if (messageStartIndex == -1) {
+        if (messageTagStartIndex == -1) {
             break;
         }
 
         // Offset the messageStartIndex to remove "<Message"
-        messageStartIndex += messageStartString.length();
+        int messageStartIndex = messageTagStartIndex + messageStartString.length();
 
         // Get the end index of the message
-        int messageEndIndex = rawXMLData.indexOf("</Message>", messageStartIndex);
+        int messageEndIndex = rawXMLData.indexOf(messageEndString, messageStartIndex);
 
-        // Handle a malformed message end tag (skip to next message)
+
+        // Handle a malformed message end tag (skip to next valid message)
         if (messageEndIndex == -1) {
-            rawXMLIndex = messageStartIndex + messageStartString.length();
+            // If the final message has a malformed/missing end tag
+            rawXMLIndex = nextMessageStartIndex;
+            continue;
+        } else if (nextMessageStartIndex != -1 && messageEndIndex > nextMessageStartIndex) {
+            // If the message has a malformed/missing end tag, this makes sure that it doesn't pick up the
+            // next message's end tag and treat both as one message
+            rawXMLIndex = nextMessageStartIndex;
             continue;
         }
 
@@ -55,9 +66,14 @@ std::vector<ChatMessage> Parser::parseXML(const QString &rawXMLData) {
         // Update the index to search for the next message
         rawXMLIndex = messageEndIndex + messageEndString.length();
 
+        // Used to create the progress bar while loading
+        int currentProgress = (static_cast<double>(rawXMLIndex) / totalXMLDataSize) * 100;
+
+        emit progressUpdate(currentProgress);
     }
 
-    return messageList;
+    emit progressUpdate(100);
+    emit parsingFinished(messageList);
 
 }
 

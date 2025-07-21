@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include <qdatetime.h>
+#include <QObject>
 
 struct ChatMessage {
     QDateTime dateTime;
@@ -11,11 +12,21 @@ struct ChatMessage {
     QString textStyle;
 };
 
-class Parser
+class Parser : public QObject
 {
+
+    Q_OBJECT
+
 public:
     Parser();
-    std::vector<ChatMessage> parseXML(const QString &rawXMLData);
+    // std::vector<ChatMessage> parseXML(const QString &rawXMLData);
+
+public slots:
+    void parseXML(const QString &rawXMLData);
+
+signals:
+    void progressUpdate(int percentage);
+    void parsingFinished(const std::vector<ChatMessage> results);
 
 private:
     ChatMessage buildMessage(QString rawMessageData);

@@ -5,12 +5,20 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <QProgressDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // Setup the thread for the parser
+    parser.moveToThread(&parserThread);
+    connect(this, &MainWindow::startParsing, &parser, &Parser::parseXML);
+    connect(&parser, &Parser::parsingFinished, this, &MainWindow::handleParsingFinished);
+    connect(this, &MainWindow::destroyed, &parserThread, &QThread::quit);
+    parserThread.start();
 
     // Set the xmlViewer background colour to white so that messages display correctly
     // (MSN Messenger didn't have dark mode)
@@ -29,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    parserThread.quit();
+    parserThread.wait();
     delete ui;
 }
 
@@ -55,13 +65,19 @@ void MainWindow::handleOpenAction() {
     // Extract the raw XML data from the file
     QString rawXMLData = file.readAll();
 
-    // Create an instance of the parser
-    Parser parser;
+    // Set up the dialog for the loading progress bar and connect it to get progress updates
+    QProgressDialog progressDialog;
+    connect(&parser, &Parser::progressUpdate, &progressDialog, &QProgressDialog::setValue);
+    progressDialog.setWindowTitle("Loading...");
 
-    // Pass the raw XML data to the parser to get a list of ChatMessages
-    std::vector<ChatMessage> messageList = parser.parseXML(rawXMLData);
+    emit startParsing(rawXMLData);
 
-    // Output the messageList to the xmlViewer
+    progressDialog.exec();
+
+}
+
+void MainWindow::handleParsingFinished(const std::vector<ChatMessage> &messageList) {
+
     displayMessages(messageList);
 
 }
